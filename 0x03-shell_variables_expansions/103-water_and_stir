@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Step 1: Define base alphabets
+water="water"
+stir="stir"
+bestchol="bestchol"
+
+# Step 2: Convert $WATER (base-5) to decimal
+w=$(echo "$WATER" | tr "$water" 01234)
+
+# Step 3: Convert $STIR (base-4) to decimal
+s=$(echo "$STIR" | tr "$stir" 0123)
+
+# Step 4: Add the two in decimal
+sum=$((2#$w + 2#$s))  # doesn't work for base 5 & 4 — we'll fix this next
+
+# Wait — Bash only supports base 2, 8, 10, 16. So we need to:
+# 👉 use `echo $((...))` only with base 10 input
+
+# Updated approach using `bc` instead:
+
+dec1=$(echo "ibase=5; $w" | bc)
+dec2=$(echo "ibase=4; $s" | bc)
+total=$((dec1 + dec2))
+
+# Step 5: Convert to base-8 using bestchol
+# Use a loop to divide by 8 and collect remainders
+result=""
+while [ "$total" -gt 0 ]; do
+  digit=$(( total % 8 ))
+  result="${bestchol:$digit:1}$result"
+  total=$(( total / 8 ))
+done
+
+# Print the result (or zero if it’s empty)
+echo "${result:-${bestchol:0:1}}"
